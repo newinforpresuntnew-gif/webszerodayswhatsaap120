@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Decryptor Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body, html {
+            height: 100%;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0b141a;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* FONDO DE CONVERSACIONES BORROSAS (Garantizado) */
+        .bg-emulator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* AQUÍ COLOCAS EL NOMBRE DE TU ARCHIVO */
+            background: url('fondo2.jpg'); 
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }}
+     
+        }
+        /* Capa de "Burbujas" borrosas */
+        .chat-blur-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(40px);
+            z-index: 2;
+        }
+
+        /* Pantalla de Carga Inicial */
+        #loader {
+            position: fixed;
+            z-index: 100;
+            background: #0b141a;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #00a884;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #2a3942;
+            border-top: 5px solid #00a884;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Tarjeta Principal */
+        .card {
+            position: relative;
+            z-index: 10;
+            background-color: #222e35;
+            width: 380px;
+            padding: 40px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.05);
+            display: none; /* Se muestra tras la carga */
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background-color: #6a7175;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            overflow: hidden;
+            border: 3px solid #00a884;
+        }
+
+        .avatar svg { width: 80px; height: 80px; fill: #dfe5e7; }
+
+        h1 { color: #e9edef; font-size: 26px; margin-bottom: 5px; text-transform: uppercase; }
+        .target { color: #00a884; font-size: 17px; margin-bottom: 25px; display: block; font-weight: bold; }
+
+        .status-box {
+            background-color: #182229;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px dashed #3b4a54;
+        }
+
+        .count { color: #25d366; font-weight: 800; font-size: 17px; display: block; margin-top: 5px; }
+
+        .pin-input {
+            width: 100%;
+            background-color: #2a3942;
+            border: 2px solid #3b4a54;
+            padding: 15px;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 10px;
+            outline: none;
+            letter-spacing: 8px;
+        }
+
+        .error-msg {
+            color: #f15c6d;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+            background-color: #00a884;
+            color: #111b21;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .footer { margin-top: 25px; color: #667781; font-size: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>Sincronizando con el servidor local...</p>
+    </div>
+
+    <div class="bg-emulator"></div>
+    <div class="chat-blur-overlay"></div>
+
+    <div class="card" id="mainCard">
+        <div class="avatar">
+            <svg viewBox="0 0 24 24"><path d="M12,4c2.21,0,4,1.79,4,4c0,2.21-1.79,4-4,4s-4-1.79-4-4C8,5.79,9.79,4,12,4z M12,14c4.42,0,8,1.79,8,4v2H4v-2 C4,15.79,7.58,14,12,14z"></path></svg>
+        </div>
+        
+        <h1>REI JESUS</h1>
+        <span class="target">+1 (941) 280-7777</span>
+
+        <div class="status-box">
+            <p style="color: #d1d7db; font-size: 14px;">Extracción Completa:</p>
+            <span class="count">1771 Conversaciones listas cifradas</span>
+        </div>
+
+        <input type="text" id="pin" class="pin-input" placeholder="000000" maxlength="6" inputmode="numeric">
+        
+        <div id="error" class="error-msg">PIN INCORRECTO</div>
+
+        <button class="btn" onclick="check()">DESBLOQUEAR AHORA</button>
+
+        <div class="footer">SISTEMA ZERO DAY @RECARGATUPERFIL- 2026</div>
+    </div>
+
+    <script>
+        // Simulamos carga de datos de 3 segundos
+        setTimeout(() => {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('mainCard').style.display = 'block';
+        }, 3000);
+
+        function check() {
+            const pin = document.getElementById('pin');
+            const error = document.getElementById('error');
+            
+            // Efecto de error siempre
+            error.style.display = 'block';
+            pin.value = '';
+            pin.style.borderColor = '#f15c6d';
+            
+            pin.animate([
+                { transform: 'translateX(-5px)' },
+                { transform: 'translateX(5px)' }
+            ], { duration: 80, iterations: 4 });
+        }
+    </script>
+</body>
+</html>
